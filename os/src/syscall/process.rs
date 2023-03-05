@@ -159,3 +159,24 @@ pub fn sys_set_priority(_prio: isize) -> isize {
     );
     -1
 }
+
+// YOUR JOB: Implement mmap.
+pub fn sys_mmap(_start: usize, _len: usize, _port: usize) -> isize {
+    trace!("kernel: sys_mmap NOT IMPLEMENTED YET!");
+    -1
+}
+
+// YOUR JOB: Implement munmap.
+pub fn sys_munmap(_start: usize, _len: usize) -> isize {
+    trace!("kernel: sys_munmap NOT IMPLEMENTED YET!");
+    -1
+}
+/// change data segment size
+pub fn sys_sbrk(size: i32) -> isize {
+    trace!("kernel: sys_sbrk");
+    if let Some(old_brk) = change_program_brk(size) {
+        old_brk as isize
+    } else {
+        -1
+    }
+}
