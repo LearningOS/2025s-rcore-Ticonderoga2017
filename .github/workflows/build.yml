@@ -63,6 +63,7 @@ jobs:
           qemu-system-riscv64 --version
           rustup target add riscv64gc-unknown-none-elf
 <<<<<<< HEAD
+<<<<<<< HEAD
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
           git clone https://github.com/LearningOS/rCore-Tutorial-Checker-2025S.git ci-user
           git clone https://github.com/LearningOS/rCore-Tutorial-Test-2025S.git ci-user/user
@@ -137,6 +138,9 @@ jobs:
             fi
 =======
           git config --global --add safe.directory /__w/rCore-Tutorial-Code-2023S/rCore-Tutorial-Code-2023S
+=======
+          git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+>>>>>>> update safe.directory
           git clone https://github.com/LearningOS/rCore-Tutorial-Checker-2023S.git ci-user
           git clone https://github.com/LearningOS/rCore-Tutorial-Test-2023S.git ci-user/user
           ID=`git rev-parse --abbrev-ref HEAD | grep -oP 'ch\K[0-9]'`
@@ -191,4 +195,7 @@ jobs:
           keep_history: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+<<<<<<< HEAD
 >>>>>>> Chapter 3
+=======
+>>>>>>> update safe.directory
