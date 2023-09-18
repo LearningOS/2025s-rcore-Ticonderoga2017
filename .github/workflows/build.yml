@@ -5,6 +5,7 @@ on: [push]
 env:
   CARGO_TERM_COLOR: always
 <<<<<<< HEAD
+<<<<<<< HEAD
   rust_toolchain: nightly
 
 jobs:
@@ -18,17 +19,24 @@ jobs:
           git clone https://github.com/LearningOS/rCore-Tutorial-Test-2025S.git user
 =======
   rust_toolchain: nightly-2022-08-05
+=======
+  rust_toolchain: nightly
+>>>>>>> 2023A
 
 jobs:
   build-doc:
-    if: github.repository == 'LearningOS/rCore-Tutorial-Code-2023S'
+    if: github.repository == 'LearningOS/rCore-Tutorial-Code-2023A'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Build doc
         run: |
+<<<<<<< HEAD
           git clone https://github.com/LearningOS/rCore-Tutorial-Test-2023S.git user
 >>>>>>> Chapter 2
+=======
+          git clone https://github.com/LearningOS/rCore-Tutorial-Test-2023A.git user
+>>>>>>> 2023A
           cd os
           make
           cargo doc --no-deps --verbose
@@ -48,6 +56,7 @@ jobs:
       image: duskmoon/dev-env:rcore-ci
     steps:
       - uses: actions/checkout@v4
+<<<<<<< HEAD
 =======
 =======
     outputs:
@@ -58,6 +67,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 >>>>>>> Chapter 2
+=======
+>>>>>>> 2023A
       - name: Run tests
         run: |
           qemu-system-riscv64 --version
@@ -140,28 +151,35 @@ jobs:
           git config --global --add safe.directory /__w/rCore-Tutorial-Code-2023S/rCore-Tutorial-Code-2023S
 =======
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+<<<<<<< HEAD
 >>>>>>> update safe.directory
           git clone https://github.com/LearningOS/rCore-Tutorial-Checker-2023S.git ci-user
           git clone https://github.com/LearningOS/rCore-Tutorial-Test-2023S.git ci-user/user
+=======
+          git clone https://github.com/LearningOS/rCore-Tutorial-Checker-2023A.git ci-user
+          git clone https://github.com/LearningOS/rCore-Tutorial-Test-2023A.git ci-user/user
+>>>>>>> 2023A
           ID=`git rev-parse --abbrev-ref HEAD | grep -oP 'ch\K[0-9]'`
-          cd ci-user && make test CHAPTER=$ID passwd=${{ secrets.BASE_TEST_TOKEN }} > ../output.txt
-          cat ../output.txt
-      - name: end
-        id: end
-        run: |
-          cat output.txt | grep -a "Test passed" | grep -oP "\d{1,}/\d{1,}" | xargs -i echo "points={}"
-          cat output.txt | grep -a "Test passed" | grep -oP "\d{1,}/\d{1,}" | xargs -i echo "points={}" >> $GITHUB_OUTPUT
+          # cd ci-user && make test CHAPTER=$ID passwd=${{ secrets.BASE_TEST_TOKEN }} > ../output.txt
+          cd ci-user && make test CHAPTER=$ID passwd=${{ secrets.BASE_TEST_TOKEN }}
+      #     cat ../output.txt
+      # - name: end
+      #   id: end
+      #   run: |
+      #     cat output.txt | grep -a "Test passed" | grep -oP "\d{1,}/\d{1,}" | xargs -i echo "points={}"
+      #     cat output.txt | grep -a "Test passed" | grep -oP "\d{1,}/\d{1,}" | xargs -i echo "points={}" >> $GITHUB_OUTPUT
   gitlab-mirror:
-    if: github.repository == 'LearningOS/rCore-Tutorial-Code-2023S'
+    if: github.repository == 'LearningOS/rCore-Tutorial-Code-2023A'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Mirror + trigger CI
-      uses: Gallium70/gitlab-mirror-and-ci-action@master
+      uses: tkf2019/gitlab-mirror-and-ci-action@master
       with:
-        args: "https://git.tsinghua.edu.cn/os-lab/2023s/public/rcore-tutorial-code-2023s"
+        args: "https://git.tsinghua.edu.cn/os-lab/2023a/public/rcore-tutorial-code-2023a"
       env:
         GITLAB_HOSTNAME: "git.tsinghua.edu.cn"
+<<<<<<< HEAD
         GITLAB_PROJECT_ID: "20881"
         GITLAB_PROJECT_NAME: "rcore-tutorial-code-2023s"
 <<<<<<< HEAD
@@ -199,3 +217,33 @@ jobs:
 >>>>>>> Chapter 3
 =======
 >>>>>>> update safe.directory
+=======
+        GITLAB_PROJECT_ID: "26334"
+        GITLAB_PROJECT_NAME: "rcore-tutorial-code-2023a"
+        GITLAB_PROJECT_TOKEN: ${{ secrets.GITLAB_PROJECT_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # deploy:
+  #   if: github.repository != 'LearningOS/rCore-Tutorial-Code-2023A'
+  #   name: Deploy to pages
+  #   needs: basic-test
+  #   runs-on: ubuntu-latest
+  #   permissions: write-all
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       continue-on-error: true
+  #       with:
+  #         ref: 'gh-pages'
+  #     - name: Save Log File
+  #       uses: yfblock/multi-rank-log@main
+  #       with:
+  #         public-dir: classroom
+  #         points: ${{ needs.basic-test.outputs.points }}
+  #     - name: GitHub Pages
+  #       uses: crazy-max/ghaction-github-pages@v3
+  #       with:
+  #         target_branch: gh-pages
+  #         build_dir: ./classroom
+  #         keep_history: true
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+>>>>>>> 2023A
