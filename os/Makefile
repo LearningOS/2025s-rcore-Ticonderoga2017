@@ -49,7 +49,7 @@ $(KERNEL_BIN): kernel
 kernel:
 	@make -C ../user build TEST=$(TEST) CHAPTER=$(CHAPTER) BASE=$(BASE)
 	@echo Platform: $(BOARD)
-	@cargo build --release
+	@cargo build $(MODE_ARG)
 
 clean:
 	@cargo clean
