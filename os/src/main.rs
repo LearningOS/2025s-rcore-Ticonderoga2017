@@ -103,7 +103,6 @@ pub fn rust_main() -> ! {
     clear_bss();
     kernel_log_info();
     mm::init();
-    println!("after mm::init!");
     mm::remap_test();
     task::add_initproc();
     println!("after initproc!");
