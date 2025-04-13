@@ -13,6 +13,7 @@ mod context;
 mod switch;
 #[allow(clippy::module_inception)]
 mod task;
+mod syscall_counter;
 
 use crate::config::MAX_APP_NUM;
 use crate::loader::{get_num_app, init_app_cx};
@@ -22,6 +23,7 @@ use switch::__switch;
 pub use task::{TaskControlBlock, TaskStatus};
 
 pub use context::TaskContext;
+pub use syscall_counter::SyscallCounter;
 
 /// The task manager, where all the tasks are managed.
 ///
@@ -54,6 +56,7 @@ lazy_static! {
         let mut tasks = [TaskControlBlock {
             task_cx: TaskContext::zero_init(),
             task_status: TaskStatus::UnInit,
+            syscall_counter: [SyscallCounter::init_counter(); 5],            
         }; MAX_APP_NUM];
         for (i, task) in tasks.iter_mut().enumerate() {
             task.task_cx = TaskContext::goto_restore(init_app_cx(i));
@@ -168,4 +171,37 @@ pub fn suspend_current_and_run_next() {
 pub fn exit_current_and_run_next() {
     mark_current_exited();
     run_next_task();
+}
+
+/// Count syscall
+pub fn add_current_syscall_count(syscall_id: usize) {
+    let mut inner = TASK_MANAGER.inner.exclusive_access();
+    let current = inner.current_task;
+    let syscall_counter = &mut inner.tasks[current].syscall_counter;
+    for i in 0..syscall_counter.len() {
+        if syscall_counter[i].syscall_id == syscall_id {
+            syscall_counter[i].count += 1;
+            return;
+        }
+    }
+    for i in 0..syscall_counter.len() {
+        if syscall_counter[i].syscall_id == 0 {
+            syscall_counter[i].syscall_id = syscall_id;
+            syscall_counter[i].count = 1;
+            return;
+        }
+    }
+}
+
+/// Get syscall count
+pub fn get_current_syscall_count(syscall_id: usize) -> isize {
+    let inner = TASK_MANAGER.inner.exclusive_access();
+    let current = inner.current_task;
+    let syscall_counter = &inner.tasks[current].syscall_counter;
+    for i in 0..syscall_counter.len() {
+        if syscall_counter[i].syscall_id == syscall_id {
+            return syscall_counter[i].count;
+        }
+    }
+    0
 }
