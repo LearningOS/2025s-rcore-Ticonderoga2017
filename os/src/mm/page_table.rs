@@ -1,6 +1,6 @@
 //! Implementation of [`PageTableEntry`] and [`PageTable`].
 
-use super::{frame_alloc, FrameTracker, PhysPageNum, StepByOne, VirtAddr, VirtPageNum};
+use super::{frame_alloc, FrameTracker, PhysAddr, PhysPageNum, StepByOne, VirtAddr, VirtPageNum};
 use alloc::vec;
 use alloc::vec::Vec;
 use bitflags::*;
@@ -69,6 +69,10 @@ impl PageTableEntry {
     /// The page pointered by page table entry is executable?
     pub fn executable(&self) -> bool {
         (self.flags() & PTEFlags::X) != PTEFlags::empty()
+    }
+    /// The page pointered by page table entry is user accessible?
+    pub fn user_accessible(&self) -> bool {
+        (self.flags() & PTEFlags::U) != PTEFlags::empty()
     }
 }
 
@@ -178,4 +182,20 @@ pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Vec<&
         start = end_va.into();
     }
     v
+}
+
+/// Translate a virtual address to a physical address
+pub fn translate_address(token: usize, vptr: *const u8) -> (Option<PageTableEntry>, Option<PhysAddr>) {   
+    let page_table = PageTable::from_token(token);
+    let va = VirtAddr::from(vptr as usize);
+    match page_table.translate(va.floor()) {
+        Some(pte) => {
+            if pte.is_valid() {
+                (Some(pte), Some((PhysAddr::from(pte.ppn()).0 + va.page_offset()).into()))
+            } else {
+                (None, None)
+            }
+        },
+        None => (None, None)
+    }
 }

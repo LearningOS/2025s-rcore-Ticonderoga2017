@@ -202,3 +202,32 @@ pub fn current_trap_cx() -> &'static mut TrapContext {
 pub fn change_program_brk(size: i32) -> Option<usize> {
     TASK_MANAGER.change_current_program_brk(size)
 }
+
+/// Add current task's syscall counter
+pub fn add_current_syscall_counter(syscall_id: usize) {
+    let mut inner = TASK_MANAGER.inner.exclusive_access();
+    let cur = inner.current_task;
+    let counter = inner.tasks[cur].syscall_counter.entry(syscall_id).or_insert(0);
+    *counter += 1;
+}
+
+/// Get current task's syscall counter
+pub fn get_current_syscall_counter(syscall_id: usize) -> isize {
+    let inner = TASK_MANAGER.inner.exclusive_access();
+    let cur = inner.current_task;
+    *inner.tasks[cur].syscall_counter.get(&syscall_id).unwrap_or(&0)
+}
+
+/// Mmap a new area in the current task's memory space
+pub fn mmap_in_current_task(start: usize, len: usize, prot: usize,) -> isize {
+    let mut inner = TASK_MANAGER.inner.exclusive_access();
+    let cur = inner.current_task;
+    inner.tasks[cur].memory_set.mmap(start, len, prot)
+}
+
+/// Unmap an area in the current task's memory space
+pub fn munmap_in_current_task(start: usize, len: usize) -> isize {
+    let mut inner = TASK_MANAGER.inner.exclusive_access();
+    let cur = inner.current_task;
+    inner.tasks[cur].memory_set.munmap(start, len)
+}
