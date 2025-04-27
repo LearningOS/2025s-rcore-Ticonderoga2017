@@ -49,6 +49,16 @@ pub struct ProcessControlBlockInner {
     pub semaphore_list: Vec<Option<Arc<Semaphore>>>,
     /// condvar list
     pub condvar_list: Vec<Option<Arc<Condvar>>>,
+    /// mutex
+    pub mtx_available: Vec<usize>,
+    pub mtx_allocation: Vec<Vec<usize>>,
+    pub mtx_need: Vec<Vec<usize>>,
+    /// semaphore
+    pub sem_available: Vec<usize>,
+    pub sem_allocations: Vec<Vec<usize>>,
+    pub sem_need: Vec<Vec<usize>>,
+    /// detect deadlock
+    pub deadlock_det: bool,
 }
 
 impl ProcessControlBlockInner {
@@ -77,6 +87,66 @@ impl ProcessControlBlockInner {
     /// the count of tasks(threads) in this process
     pub fn thread_count(&self) -> usize {
         self.tasks.len()
+    }
+    /// the count of mutex in this process
+    pub fn mtx_count(&self) -> usize {
+        self.mutex_list.len()
+    }
+    /// init mutex allocations
+    pub fn init_mtx_allocations(&mut self) {
+        let task_count = self.tasks.len();
+        if task_count >= self.mtx_allocation.len() {
+            self.mtx_allocation.resize(task_count, Vec::new());
+        }
+        let mtx_count = self.mutex_list.len();
+        for i in 0..task_count {
+            if mtx_count >= self.mtx_allocation[i].len() {
+                self.mtx_allocation[i].resize(mtx_count, 0);
+            }
+        }
+    }
+    /// init mutex need
+    pub fn init_mtx_need(&mut self) {
+        let task_count = self.tasks.len();
+        if task_count >= self.mtx_need.len() {
+            self.mtx_need.resize(task_count, Vec::new());
+        }
+        let mtx_count = self.mutex_list.len();
+        for i in 0..task_count {
+            if mtx_count >= self.mtx_need[i].len() {
+                self.mtx_need[i].resize(mtx_count, 0);
+            }
+        }
+    }
+    /// the count of semaphore in this process
+    pub fn sem_count(&self) -> usize {
+        self.semaphore_list.len()
+    }
+    /// init semaphore allocations
+    pub fn init_sem_allocations(&mut self) {
+        let task_count = self.tasks.len();
+        if task_count >= self.sem_allocations.len() {
+            self.sem_allocations.resize(task_count, Vec::new());
+        }
+        let sem_count = self.semaphore_list.len();
+        for i in 0..task_count {
+            if sem_count >= self.sem_allocations[i].len() {
+                self.sem_allocations[i].resize(sem_count, 0);
+            }
+        }
+    }
+    /// init semaphore need
+    pub fn init_sem_need(&mut self) {
+        let task_count = self.tasks.len();
+        if task_count >= self.sem_need.len() {
+            self.sem_need.resize(task_count, Vec::new());
+        }
+        let sem_count = self.semaphore_list.len();
+        for i in 0..task_count {
+            if sem_count >= self.sem_need[i].len() {
+                self.sem_need[i].resize(sem_count, 0);
+            }
+        }
     }
     /// get a task with tid in this process
     pub fn get_task(&self, tid: usize) -> Arc<TaskControlBlock> {
@@ -119,6 +189,13 @@ impl ProcessControlBlock {
                     mutex_list: Vec::new(),
                     semaphore_list: Vec::new(),
                     condvar_list: Vec::new(),
+                    mtx_available: Vec::new(),
+                    mtx_allocation: Vec::new(),
+                    mtx_need: Vec::new(),
+                    sem_available: Vec::new(),
+                    sem_allocations: Vec::new(),
+                    sem_need: Vec::new(),
+                    deadlock_det: false,
                 })
             },
         });
@@ -245,6 +322,13 @@ impl ProcessControlBlock {
                     mutex_list: Vec::new(),
                     semaphore_list: Vec::new(),
                     condvar_list: Vec::new(),
+                    mtx_available: Vec::new(),
+                    mtx_allocation: Vec::new(),
+                    mtx_need: Vec::new(),
+                    sem_available: Vec::new(),
+                    sem_allocations: Vec::new(),
+                    sem_need: Vec::new(),
+                    deadlock_det: false,
                 })
             },
         });

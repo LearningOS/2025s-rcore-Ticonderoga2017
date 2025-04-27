@@ -1,10 +1,10 @@
 use crate::{
     fs::{open_file, OpenFlags},
-    mm::{translated_ref, translated_refmut, translated_str},
+    mm::{translate_virtual_address, translated_ref, translated_refmut, translated_str, VirtAddr, VirtPageNum},
     task::{
         current_process, current_task, current_user_token, exit_current_and_run_next, pid2process,
         suspend_current_and_run_next, SignalFlags,
-    },
+    }, timer::get_time_us,
 };
 use alloc::{string::String, sync::Arc, vec::Vec};
 
@@ -152,11 +152,45 @@ pub fn sys_kill(pid: usize, signal: u32) -> isize {
 /// HINT: You might reimplement it with virtual memory management.
 /// HINT: What if [`TimeVal`] is splitted by two pages ?
 pub fn sys_get_time(_ts: *mut TimeVal, _tz: usize) -> isize {
-    trace!(
-        "kernel:pid[{}] sys_get_time NOT IMPLEMENTED",
-        current_task().unwrap().process.upgrade().unwrap().getpid()
-    );
-    -1
+    let start_va = _ts as usize;
+    let start_vpn = VirtPageNum::from(start_va);
+    let end_va = start_va + core::mem::size_of::<TimeVal>();
+    let end_vpn = VirtPageNum::from(end_va);
+    let us = get_time_us();
+    if start_vpn == end_vpn {
+        let (pte, pa) = 
+        translate_virtual_address(VirtAddr::from(start_va));
+        if pte.is_none() || !pte.unwrap().writable() {
+            return -1;
+        }
+        let ts = pa.unwrap().0;
+        unsafe {
+            *(ts as *mut TimeVal) = TimeVal {
+                sec: us / 1_000_000,
+                usec: us % 1_000_000,
+            };
+        }
+        0
+    } else {
+        let (pte, pa) = 
+        translate_virtual_address(VirtAddr::from(start_va));
+        let (epte, _epa) = 
+        translate_virtual_address(VirtAddr::from(end_va));
+        if pte.is_some() && epte.is_some() 
+        && pte.unwrap().writable() 
+        && epte.unwrap().writable() {
+            let ts = pa.unwrap().0;
+            unsafe {
+                *(ts as *mut TimeVal) = TimeVal {
+                    sec: us / 1_000_000,
+                    usec: us % 1_000_000,
+                };
+            }
+            0
+        } else {
+            -1
+        }
+    }
 }
 
 /// mmap syscall
